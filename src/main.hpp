@@ -1,4 +1,7 @@
 #include <iostream>
 #include <string>
 
-void renderLoginBox(std::string distro);
+// Functions
+void getDistroName(struct ncplane* stdplane);
+
+void renderWelcomeMsg(struct notcurses* nc, struct ncplane* stdplane);
