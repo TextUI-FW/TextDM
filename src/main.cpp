@@ -18,7 +18,11 @@ int main() {
     struct notcurses* nc = notcurses_init(&opts, NULL);
     struct ncplane* stdplane = notcurses_stdplane(nc);
 
+    // Init the screen blocks
     renderWelcomeMsg(nc, stdplane);
+
+    // Render the login screen
+    notcurses_render(nc);
 
     sleep(5);
 
@@ -27,27 +31,34 @@ int main() {
     return 0;
 }
 
-void getDistroName(struct ncplane* stdplane) {
+/*
+*    This function gets the distro name using a BASH
+*    command and prints with a welcome message.
+*
+*    /param plane -> The plane to use
+*/
+void getDistroName(struct ncplane* plane) {
     string command = "cat /etc/os-release | grep NAME | head -n1 | cut -d '=' -d '\"' -f2"; // Command to find the distro name
 
-    FILE* pipe = popen(command.c_str(), "r"); // Using popen
+    FILE* pipe = popen(command.c_str(), "r"); // Using popen to execute the command in the console
 
     char buffer[128];
 
     while (fgets(buffer, sizeof(buffer), pipe) != NULL) {
         buffer[strcspn(buffer, "\n")] = 0;
-        ncplane_printf(stdplane, " %s!", buffer);
-    } // Reading the popen buffer to ncplane_putstr
+        ncplane_printf_aligned(plane, 1, NCALIGN_CENTER,"Welcome to %s!", buffer);
+    } // Reading the popen buffer to ncplane_printf()
 
-    pclose(pipe); // Closing popen
+    pclose(pipe); // Closing popen/console instance
 }
 
-void renderWelcomeMsg(struct notcurses* nc, struct ncplane* stdplane) {
-    // Putting some text
-    ncplane_set_styles(stdplane, NCSTYLE_BOLD); // Italic
-    ncplane_putstr(stdplane, "Welcome to"); //Welcome message
-    getDistroName(stdplane);
-
-    // Render the changes
-    notcurses_render(nc);
+/*
+ *    This function renders the welcome message:
+ *    "Welcome to (your_distro_name)!".
+ *
+ *    /param nc -> The notcurses instance
+ */
+void renderWelcomeMsg(struct notcurses* nc, struct ncplane* plane) {
+    ncplane_set_styles(plane, NCSTYLE_BOLD); // Setting the font style to bold
+    getDistroName(plane); // Welcome message
 }
